@@ -42,10 +42,3 @@ jobs:
         - TOXENV=py37
       script:
         - tox
-
-    # - stage: publish
-    #   python: 3.7
-    #   if: tag IS present
-    #   script:
-    #     - pip install twine
-    #     - make release

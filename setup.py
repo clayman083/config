@@ -16,7 +16,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
-        "Topic :: Software Development :: Configuration",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords="config",
     extras_require={
@@ -29,6 +29,6 @@ setup(
             "flake8-print==3.1.0",
             "mypy==0.650",
         ],
-        "test": ["pytest==4.0.2", "coverage==4.5.2", "coveralls"],
+        "test": ["pytest==4.0.2", "coverage==4.5.2"],
     },
 )
