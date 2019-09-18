@@ -6,7 +6,7 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     url="https://github.com/clayman74/config",
-    licence="MIT",
+    license="MIT",
     author="Kirill Sumorokov",
     author_email="sumorokov.k@gmail.com",
     description="Framework agnostic configuration for apps and microservices",

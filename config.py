@@ -148,6 +148,11 @@ class NestedField(Field[Config]):
             raise InvalidField(value)
 
 
+class ConsulConfig(Config):
+    host = StrField(default="localhost", env="CONSUL_HOST")
+    port = IntField(default=8500, env="CONSUL_PORT")
+
+
 class PostgresConfig(Config):
     host = StrField(default="localhost", env="POSTGRES_HOST")
     port = IntField(default=5432, env="POSTGRES_PORT")
