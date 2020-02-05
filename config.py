@@ -19,7 +19,7 @@ class Field(ABC, Generic[T]):
         *,
         default: Optional[T] = None,
         env: Optional[str] = None,
-        key: Optional[str] = None
+        key: Optional[str] = None,
     ) -> None:
         self.env = env
         self.key = key
@@ -55,6 +55,11 @@ class Field(ABC, Generic[T]):
 class BaseConfig(type):
     def __new__(cls, name, bases, attrs):
         fields: Dict[str, Field] = {}
+
+        for base_cls in bases:
+            for field_name, field in base_cls.__fields__.items():
+                if field_name not in attrs:
+                    attrs[field_name] = field
 
         for name, field in iter(attrs.items()):
             if isinstance(field, Field):

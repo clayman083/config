@@ -134,3 +134,36 @@ class TestConfigWithNested:
 
         assert conf.consul.host == "consul.service.consul"
         assert conf.consul.port == 8500
+
+
+class TestConfigInheritance:
+    @pytest.fixture(scope="function")
+    def conf(self):
+        class ConsulConfig(config.Config):
+            host = config.StrField(default="localhost", env="CONSUL_HOST")
+            port = config.IntField(default=8500, env="CONSUL_PORT")
+
+        return ConsulConfig
+
+    @pytest.mark.unit
+    def test_inherit_fields_from_base(self, conf):
+        class CustomConsulConfig(conf):
+            dc = config.StrField(default="dc", env="CONSUL_DC")
+
+        consul_config = CustomConsulConfig(
+            {"host": "consul.service.consul", "port": "8500", "dc": "dc1"}
+        )
+
+        assert consul_config.host == "consul.service.consul"
+        assert consul_config.port == 8500
+        assert consul_config.dc == "dc1"
+
+    @pytest.mark.unit
+    def test_rewrite_fields_from_base(self, conf):
+        class CustomConsulConfig(conf):
+            host = config.StrField(default="consul.service.consul")
+
+        consul_config = CustomConsulConfig()
+
+        assert consul_config.host == "consul.service.consul"
+        assert consul_config.port == 8500
