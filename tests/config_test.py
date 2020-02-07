@@ -4,6 +4,7 @@ from unittest import mock
 import pytest  # type: ignore
 
 import config
+from config.exceptions import ImproperlyConfigured
 
 
 class TestBoolField:
@@ -81,16 +82,24 @@ class TestConfig:
             assert conf.debug is True
 
     @pytest.mark.unit
-    def test_load_from_dict(self):
+    @pytest.mark.parametrize(
+        "defaults, expected_debug, expected_secret",
+        (
+            ({"foo": "bar"}, False, ""),
+            ({"debug": "True", "secret_key": "top_secret"}, True, "top_secret"),
+            ({"debug": 1, "secret_key": "top_secret"}, True, "top_secret"),
+        ),
+    )
+    def test_load_from_dict(self, defaults, expected_debug, expected_secret):
         class TestConf(config.Config):
             debug = config.BoolField(default=False)
-            secret_key = config.StrField()
+            secret_key = config.StrField(default="")
 
         conf = TestConf()
-        conf.load_from_dict({"debug": "True", "secret_key": "top_secret"})
+        conf.load_from_dict(defaults)
 
-        assert conf.debug is True
-        assert conf.secret_key == "top_secret"
+        assert conf.debug == expected_debug
+        assert conf.secret_key == expected_secret
 
 
 class TestConfigWithNested:
@@ -134,6 +143,12 @@ class TestConfigWithNested:
 
         assert conf.consul.host == "consul.service.consul"
         assert conf.consul.port == 8500
+
+    @pytest.mark.unit
+    def test_load_from_dict_plain(self, conf):
+        with pytest.raises(ImproperlyConfigured):
+            test_config = conf()
+            test_config.load_from_dict({"consul": "foo"})
 
 
 class TestConfigInheritance:
