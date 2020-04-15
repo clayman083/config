@@ -17,7 +17,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 packages = [
-    { include = "config", from = "src" },
+  { include = "config", from = "src" },
 ]
 
 [tool.poetry.dependencies]
