@@ -1,5 +1,4 @@
 import os  # noqa: F401
-from unittest import mock
 
 import pytest  # type: ignore
 
@@ -69,16 +68,16 @@ class TestConfig:
 
         assert conf.debug is True
 
-    @pytest.mark.unit
-    def test_load_from_env(self):
-        class TestConf(config.Config):
-            debug = config.BoolField(default=False, env="DEBUG")
+    # @pytest.mark.unit
+    # def test_load_from_env(self):
+    #     class TestConf(config.Config):
+    #         debug = config.BoolField(default=False, env="DEBUG")
 
-        with mock.patch.dict("os.environ", {"DEBUG": "True"}):
-            conf = TestConf()
-            conf.load_from_env()
+    #     with mock.patch.dict("os.environ", {"DEBUG": "True"}):
+    #         conf = TestConf()
+    #         conf.load_from_env()
 
-            assert conf.debug is True
+    #         assert conf.debug is True
 
     @pytest.mark.unit
     def test_load_from_dict(self):
@@ -114,16 +113,16 @@ class TestConfigWithNested:
         assert test_config.consul.host == "consul.service.consul"
         assert test_config.consul.port == 8500
 
-    @pytest.mark.unit
-    def test_load_from_env(self, conf):
-        with mock.patch.dict(
-            "os.environ", {"CONSUL_HOST": "consul.service.consul"}
-        ):
-            test_config = conf()
-            test_config.load_from_env()
+    # @pytest.mark.unit
+    # def test_load_from_env(self, conf):
+    #     with mock.patch.dict(
+    #         "os.environ", {"CONSUL_HOST": "consul.service.consul"}
+    #     ):
+    #         test_config = conf()
+    #         test_config.load_from_env()
 
-            assert conf.consul.host == "consul.service.consul"
-            assert conf.consul.port == 8500
+    #         assert conf.consul.host == "consul.service.consul"
+    #         assert conf.consul.port == 8500
 
     @pytest.mark.unit
     def test_load_from_dict(self, conf):
