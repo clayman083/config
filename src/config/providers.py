@@ -16,8 +16,8 @@ class EnvValueProvider(ValueProvider):
 
 
 class FileValueProvider(ValueProvider):
-    def __init__(self, conf_dir) -> None:
-        self.conf_dir = Path(conf_dir)
+    def __init__(self, conf_dir: Path) -> None:
+        self.conf_dir = conf_dir
 
     def load(self, field: Field) -> Optional[str]:
         value = None
@@ -26,7 +26,7 @@ class FileValueProvider(ValueProvider):
             try:
                 with (self.conf_dir / field.path).open() as fp:
                     value = fp.read()
-            except IOError as e:
-                raise e
+            except IOError:
+                pass
 
         return value
