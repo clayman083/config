@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type
+from typing import Any, Generic, Optional, Type, TypeVar
 
 from config.abc import Config, Field
 from config.exceptions import InvalidField
@@ -39,16 +39,19 @@ class StrField(Field[str]):
         return str(value)
 
 
-class NestedField(Field[Config]):
+C = TypeVar("C", bound="Config")
+
+
+class NestedField(Field[Config], Generic[C]):
     def __init__(
-        self, cls: Type[Config], *, key: Optional[str] = None, **kwargs
+        self, cls: Type[C], *, key: Optional[str] = None, **kwargs
     ) -> None:
         super().__init__(key=key, **kwargs)
 
         self.config_cls = cls
         self.config = cls()
 
-    def __get__(self, obj, objtype) -> Config:
+    def __get__(self, obj, objtype) -> C:
         return self.config
 
     def load_from_dict(self, raw: Any) -> None:

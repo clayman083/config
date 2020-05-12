@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, Optional, TypeVar, Union
+from typing import Dict, Generic, Optional, TypeVar, Union
+
+VT = Union[str, int, float, bool, "Config"]
+FT = TypeVar("FT", bound="VT")
+
+RawConfig = Dict[str, VT]
 
 
-T = TypeVar("T")
-
-RawConfig = Dict[str, Union[str, int, bool]]
-
-
-class Field(ABC, Generic[T]):
+class Field(ABC, Generic[FT]):
     def __init__(
         self,
         *,
-        default: Optional[T] = None,
+        default: Optional[FT] = None,
         key: Optional[str] = None,
         env: Optional[str] = None,
         path: Optional[str] = None,
@@ -25,25 +25,25 @@ class Field(ABC, Generic[T]):
         self.consul_path = consul_path
         self.vault_path = vault_path
         self.readonly = readonly
-        self.value: Optional[T] = default
+        self.value: Optional[FT] = default
 
-    def __get__(self, obj, objtype) -> Optional[T]:
+    def __get__(self, obj, objtype) -> Optional[FT]:
         return self.value
 
-    def __set__(self, obj, value):
+    def __set__(self, obj, value: FT) -> None:
         self._set_value(value)
 
-    def _set_value(self, value):
+    def _set_value(self, value: VT) -> None:
         if not self.readonly:
             normalized = self.normalize(value)
             self.validate(normalized)
             self.value = normalized
 
     @abstractmethod
-    def normalize(self, value: Any) -> T:
+    def normalize(self, value: VT) -> FT:
         pass  # pragma: no cover
 
-    def validate(self, value: T) -> bool:
+    def validate(self, value: FT) -> bool:
         return True
 
     def load_from_dict(self, raw: RawConfig) -> None:
