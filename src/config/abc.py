@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Generic, Optional, TypeVar, Union
 
-VT = Union[str, int, float, bool, "Config"]
+VT = Union[
+    str, int, float, bool, "Config", Dict[str, Union[str, int, float, bool]]
+]
 FT = TypeVar("FT", bound="VT")
 
 RawConfig = Dict[str, VT]
