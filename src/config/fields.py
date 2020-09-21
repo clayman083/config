@@ -51,16 +51,16 @@ class NestedField(Field[Config], Generic[C]):
         self.config_cls = cls
         self.config = cls()
 
-    def __get__(self, obj, objtype) -> C:
-        return self.config
+    def load_from_dict(self, raw: Any) -> Optional[C]:
+        value = None
 
-    def load_from_dict(self, raw: Any) -> None:
         if self.key and self.key in raw:
             value = raw[self.key]
-            if isinstance(value, Config):
-                self._set_value(value)
-            else:
+            if not isinstance(value, Config):
                 self.config.load_from_dict(raw[self.key])
+                return self.config
+
+        return value
 
     def normalize(self, value: Any) -> Config:
         if isinstance(value, Config):

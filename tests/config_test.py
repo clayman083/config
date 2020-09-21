@@ -131,8 +131,43 @@ class TestConfigWithNested:
             {"consul": {"host": "consul.service.consul", "port": "8500"}}
         )
 
-        assert conf.consul.host == "consul.service.consul"
-        assert conf.consul.port == 8500
+        assert test_config.consul.host == "consul.service.consul"
+        assert test_config.consul.port == 8500
+
+    @pytest.mark.unit
+    def test_load_multiple_from_dict(self, conf):
+        class ServiceConfig(config.Config):
+            host = config.StrField()
+            backend = config.StrField()
+
+        class ServicesConfig(config.Config):
+            bar = config.NestedField[ServiceConfig](ServiceConfig)
+            baz = config.NestedField[ServiceConfig](ServiceConfig)
+
+        class AppConfig(config.Config):
+            foo = config.NestedField[ServiceConfig](ServiceConfig)
+            services = config.NestedField[ServicesConfig](ServicesConfig)
+
+        test_config = AppConfig()
+        test_config.load_from_dict(
+            {
+                "foo": {"host": "foo.example.com", "backend": "127.0.0.1:5001"},
+                "services": {
+                    "bar": {
+                        "host": "bar.example.com",
+                        "backend": "127.0.0.1:5002",
+                    },
+                    "baz": {
+                        "host": "baz.example.com",
+                        "backend": "127.0.0.1:5003",
+                    },
+                },
+            }
+        )
+
+        assert test_config.foo.host == "foo.example.com"
+        assert test_config.services.bar.host == "bar.example.com"
+        assert test_config.services.baz.host == "baz.example.com"
 
 
 class TestConfigInheritance:

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, Optional, TypeVar, Union
+from typing import Dict, Generic, Iterable, Optional, TypeVar, Union
+
 
 VT = Union[
     str, int, float, bool, "Config", Dict[str, Union[str, int, float, bool]]
@@ -29,17 +30,17 @@ class Field(ABC, Generic[FT]):
         self.readonly = readonly
         self.value: Optional[FT] = default
 
-    def __get__(self, obj, objtype) -> Optional[FT]:
-        return self.value
+    # def __get__(self, obj, objtype) -> Optional[FT]:
+    #     return self.value
 
-    def __set__(self, obj, value: FT) -> None:
-        self._set_value(value)
+    # def __set__(self, obj, value: FT) -> None:
+    #     self._set_value(value)
 
-    def _set_value(self, value: VT) -> None:
-        if not self.readonly:
-            normalized = self.normalize(value)
-            self.validate(normalized)
-            self.value = normalized
+    # def _set_value(self, value: VT) -> None:
+    #     if not self.readonly:
+    #         normalized = self.normalize(value)
+    #         self.validate(normalized)
+    #         self.value = normalized
 
     @abstractmethod
     def normalize(self, value: VT) -> FT:
@@ -48,9 +49,14 @@ class Field(ABC, Generic[FT]):
     def validate(self, value: FT) -> bool:
         return True
 
-    def load_from_dict(self, raw: RawConfig) -> None:
+    def load_from_dict(self, raw: RawConfig) -> Optional[FT]:
+        normalized = None
+
         if self.key and self.key in raw:
-            self._set_value(raw[self.key])
+            normalized = self.normalize(raw[self.key])
+            self.validate(normalized)
+
+        return normalized
 
 
 class ValueProvider(ABC):
@@ -68,15 +74,18 @@ class BaseConfig(type):
                 if field_name not in attrs:
                     attrs[field_name] = field
 
-        for name, field in iter(attrs.items()):
+        for field_name, field in iter(attrs.items()):
             if isinstance(field, Field):
                 if not field.key:
-                    field.key = name
+                    field.key = field_name
 
                 if not field.env:
-                    field.env = name.upper()
+                    field.env = field_name.upper()
 
-                fields[name] = field
+                fields[field_name] = field
+
+        for field_name in iter(fields.keys()):
+            del attrs[field_name]
 
         attrs["__fields__"] = fields
 
@@ -84,17 +93,32 @@ class BaseConfig(type):
 
 
 class Config(metaclass=BaseConfig):
+    __dict__: Dict[str, Optional[VT]]
     __fields__: Dict[str, Field]
 
-    def __init__(self, defaults: Optional[RawConfig] = None):
+    def __init__(self, defaults: Optional[RawConfig] = None) -> None:
+        for field_name, field in iter(self.__fields__.items()):
+            self.__dict__[field_name] = field.value
+
         if defaults:
             self.load_from_dict(defaults)
 
-    def load(self, providers) -> None:
-        for field in iter(self.__fields__.values()):
+    def __getattr__(self, item: str) -> Optional[VT]:
+        return self.__dict__[item]
+
+    def __setattr__(self, name: str, value: Optional[VT]) -> None:
+        if name in self.__fields__:
+            self.__dict__[name] = value
+
+    def load(self, providers: Iterable[ValueProvider]) -> None:
+        for field_name, field in iter(self.__fields__.items()):
             for provider in providers:
-                provider.load(field)
+                value = provider.load(field)
+
+                setattr(self, field_name, value)
 
     def load_from_dict(self, raw: RawConfig) -> None:
-        for field in iter(self.__fields__.values()):
-            field.load_from_dict(raw)
+        for field_name, field in iter(self.__fields__.items()):
+            value = field.load_from_dict(raw)
+
+            setattr(self, field_name, value)
