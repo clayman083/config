@@ -1,7 +1,7 @@
 config
 ======
-.. image:: https://travis-ci.com/clayman083/config.svg?branch=master
-    :target: https://travis-ci.com/clayman083/config
+.. image:: https://github.com/clayman083/config/workflows/Tests/badge.svg?branch=master
+    :target: https://github.com/clayman083/config/actions?query=workflow%3ATests+branch%3Amaster
 
 Framework agnostic configuration for apps and microservices .
 
