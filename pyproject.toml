@@ -21,7 +21,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 ujson = "^1.35"
 
 [tool.poetry.dev-dependencies]
