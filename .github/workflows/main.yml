@@ -4,7 +4,7 @@ name: Tests
 
 on:
   push:
-    branches: ["master", "features/**/*"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
