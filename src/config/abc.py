@@ -120,5 +120,5 @@ class Config(metaclass=BaseConfig):
     def load_from_dict(self, raw: RawConfig) -> None:
         for field_name, field in iter(self.__fields__.items()):
             value = field.load_from_dict(raw)
-
-            setattr(self, field_name, value)
+            if value:
+                setattr(self, field_name, value)
