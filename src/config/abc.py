@@ -30,17 +30,8 @@ class Field(ABC, Generic[FT]):
         self.readonly = readonly
         self.value: Optional[FT] = default
 
-    # def __get__(self, obj, objtype) -> Optional[FT]:
-    #     return self.value
-
-    # def __set__(self, obj, value: FT) -> None:
-    #     self._set_value(value)
-
-    # def _set_value(self, value: VT) -> None:
-    #     if not self.readonly:
-    #         normalized = self.normalize(value)
-    #         self.validate(normalized)
-    #         self.value = normalized
+    def get_value(self) -> Optional[FT]:
+        return self.value
 
     @abstractmethod
     def normalize(self, value: VT) -> FT:
@@ -62,7 +53,7 @@ class Field(ABC, Generic[FT]):
 class ValueProvider(ABC):
     @abstractmethod
     def load(self, field: Field) -> Optional[str]:
-        pass
+        pass  # pragma: no cover
 
 
 class BaseConfig(type):
@@ -98,7 +89,7 @@ class Config(metaclass=BaseConfig):
 
     def __init__(self, defaults: Optional[RawConfig] = None) -> None:
         for field_name, field in iter(self.__fields__.items()):
-            self.__dict__[field_name] = field.value
+            self.__dict__[field_name] = field.get_value()
 
         if defaults:
             self.load_from_dict(defaults)
@@ -108,7 +99,13 @@ class Config(metaclass=BaseConfig):
 
     def __setattr__(self, name: str, value: Optional[VT]) -> None:
         if name in self.__fields__:
-            self.__dict__[name] = value
+            field = self.__fields__.get(name)
+
+            if field:
+                normalized = field.normalize(value)  # type: ignore
+                field.validate(normalized)
+
+                self.__dict__[name] = normalized
 
     def load(self, providers: Iterable[ValueProvider]) -> None:
         for field_name, field in iter(self.__fields__.items()):

@@ -1,5 +1,3 @@
-import os  # noqa: F401
-
 import pytest  # type: ignore
 
 import config
@@ -59,37 +57,41 @@ class TestFloatField:
 
 @pytest.mark.unit
 class TestConfig:
-    @pytest.mark.unit
-    def test_set_defaults(self):
-        class TestConf(config.Config):
-            debug = config.BoolField(default=False)
-
-        conf = TestConf({"debug": True})
-
-        assert conf.debug is True
-
-    # @pytest.mark.unit
-    # def test_load_from_env(self):
-    #     class TestConf(config.Config):
-    #         debug = config.BoolField(default=False, env="DEBUG")
-
-    #     with mock.patch.dict("os.environ", {"DEBUG": "True"}):
-    #         conf = TestConf()
-    #         conf.load_from_env()
-
-    #         assert conf.debug is True
-
-    @pytest.mark.unit
-    def test_load_from_dict(self):
+    @pytest.fixture(scope="function")
+    def conf(self):
         class TestConf(config.Config):
             debug = config.BoolField(default=False)
             secret_key = config.StrField()
 
-        conf = TestConf()
-        conf.load_from_dict({"debug": "True", "secret_key": "top_secret"})
+        return TestConf
 
-        assert conf.debug is True
-        assert conf.secret_key == "top_secret"
+    @pytest.mark.unit
+    @pytest.mark.parametrize(
+        "defaults, expected", ((None, False), ({"debug": True}, True))
+    )
+    def test_set_defaults(self, conf, defaults, expected):
+        test_conf = conf(defaults=defaults)
+
+        assert test_conf.debug == expected
+
+    @pytest.mark.unit
+    @pytest.mark.parametrize(
+        "value, expected",
+        ((True, True), (False, False), ("0", False), ("1", True)),
+    )
+    def test_normalize_value_on_set(self, conf, value, expected):
+        test_conf = conf()
+        test_conf.debug = value
+
+        assert test_conf.debug == expected
+
+    @pytest.mark.unit
+    def test_load_from_dict(self, conf):
+        test_conf = conf()
+        test_conf.load_from_dict({"debug": "True", "secret_key": "top_secret"})
+
+        assert test_conf.debug is True
+        assert test_conf.secret_key == "top_secret"
 
 
 class TestConfigWithNested:
@@ -105,24 +107,20 @@ class TestConfigWithNested:
         return TestConf
 
     @pytest.mark.unit
-    def test_set_defaults(self, conf):
-        test_config = conf(
-            {"consul": {"host": "consul.service.consul", "port": "8500"}}
-        )
+    @pytest.mark.parametrize(
+        "defaults, expected",
+        (
+            (None, ("localhost", 8500)),
+            (
+                {"consul": {"host": "consul.service.consul", "port": "8500"}},
+                ("consul.service.consul", 8500),
+            ),
+        ),
+    )
+    def test_set_defaults(self, conf, defaults, expected):
+        test_config = conf(defaults=defaults)
 
-        assert test_config.consul.host == "consul.service.consul"
-        assert test_config.consul.port == 8500
-
-    # @pytest.mark.unit
-    # def test_load_from_env(self, conf):
-    #     with mock.patch.dict(
-    #         "os.environ", {"CONSUL_HOST": "consul.service.consul"}
-    #     ):
-    #         test_config = conf()
-    #         test_config.load_from_env()
-
-    #         assert conf.consul.host == "consul.service.consul"
-    #         assert conf.consul.port == 8500
+        assert test_config.consul.host, test_config.consul.port == expected
 
     @pytest.mark.unit
     def test_load_from_dict(self, conf):

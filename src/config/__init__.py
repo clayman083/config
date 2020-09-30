@@ -48,20 +48,19 @@ def load_from_file(config: Config, path: Path, silent: bool = False) -> None:
     try:
         with path.open() as fp:
             raw = fp.read()
-
     except IOError:
         if not silent:
             raise ConfigNotFound(path)
-
-    if path.suffix == ".json":
-        try:
-            config_data = ujson.loads(raw)
-        except ValueError:
-            raise BrokenConfig(path)
     else:
-        raise UnknownConfigFormat(path)
+        if path.suffix == ".json":
+            try:
+                config_data = ujson.loads(raw)
+            except ValueError:
+                raise BrokenConfig(path)
+        else:
+            raise UnknownConfigFormat(path)
 
-    config.load_from_dict(config_data)
+        config.load_from_dict(config_data)
 
 
 class ConsulConfig(Config):

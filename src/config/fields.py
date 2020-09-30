@@ -51,6 +51,9 @@ class NestedField(Field[Config], Generic[C]):
         self.config_cls = cls
         self.config = cls()
 
+    def get_value(self) -> Optional[C]:
+        return self.config
+
     def load_from_dict(self, raw: Any) -> Optional[C]:
         value = None
 
