@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-import ujson
+import orjson  # type: ignore
 
 from config.abc import Config, ValueProvider
 from config.exceptions import (
@@ -54,7 +54,7 @@ def load_from_file(config: Config, path: Path, silent: bool = False) -> None:
     else:
         if path.suffix == ".json":
             try:
-                config_data = ujson.loads(raw)
+                config_data = orjson.loads(raw)
             except ValueError:
                 raise BrokenConfig(path)
         else:

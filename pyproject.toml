@@ -22,7 +22,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-ujson = "^1.35"
+orjson = "^3.5.3"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
