@@ -29,29 +29,44 @@
       "**/venv": true
   },
 
-  "editor.rulers": [80],
+  "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/*/**": true
+  },
+
+  "editor.rulers": [120],
 
   "python.linting.enabled": true,
+
   "python.linting.flake8Enabled": true,
-  "python.formatting.provider": "black",
-  "python.formatting.blackArgs": ["--line-length", "80"],
-  "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["tests"],
-  "python.workspaceSymbols.exclusionPatterns": [
-    "**/site-packages/**",
-    ".tox/**"
+  "python.linting.flake8Args": [
+    "--max-line-length=120",
   ],
 
-  "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
-  "python.autoComplete.extraPaths": [
-      "${workspaceFolder}",
-      "${workspaceFolder}/.venv/lib/python3.8",
-      "${workspaceFolder}/.venv/lib/python3.8/site-packages"
-  ],
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyPath": "${workspaceFolder}/.venv/bin/mypy",
+
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length", "120"],
+
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["-vv", "tests"],
+
   "python.analysis.extraPaths": [
     "${workspaceFolder}",
-    "${workspaceFolder}/.venv/lib/python3.8",
-    "${workspaceFolder}/.venv/lib/python3.8/site-packages"
+    "${workspaceFolder}/.venv/lib/python3.10",
+    "${workspaceFolder}/.venv/lib/python3.10/site-packages"
+  ],
+
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/.venv/lib/python3.10",
+    "${workspaceFolder}/.venv/lib/python3.10/site-packages"
+  ],
+
+  "python.sortImports.args": [
+    "--settings-path", "${workspaceFolder}",
   ],
 
   "[python]": {
